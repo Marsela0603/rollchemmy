@@ -1,4 +1,9 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Atau path file PHPMailer jika tidak menggunakan Composer
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
     $name = $_POST['name'];
@@ -6,28 +11,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $subject = $_POST['subject'];
     $message = $_POST['message'];
 
-    // Email tujuan (pengirim email balasan)
-    $to = $email;
+    // Membuat instance PHPMailer
+    $mail = new PHPMailer(true);
 
-    // Subject untuk email balasan
-    $email_subject = "Feedback Rollchemmy";
+    try {
+        // Pengaturan server SMTP
+        $mail->isSMTP();                                            // Menggunakan SMTP
+        $mail->Host = 'smtp.gmail.com';                               // Atur host SMTP (gunakan SMTP server Gmail di sini)
+        $mail->SMTPAuth = true;                                       // Aktifkan autentikasi SMTP
+        $mail->Username = 'marselasela3554@gmail.com';                 // Alamat email pengirim
+        $mail->Password = 'password_email_anda';                       // Password email pengirim (gunakan password app jika menggunakan Gmail)
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;            // Enkripsi TLS
+        $mail->Port = 587;                                            // Port yang digunakan untuk TLS
 
-    // Isi email
-    $email_body = "Terimakasih telah mengirim masukan pada Rollchemmy!\n\n";
-    $email_body .= "\"Gurihnya Kebahagiaan di Tiap Gigitan\" - Admin";
+        // Pengaturan penerima
+        $mail->setFrom('marselasela3554@gmail.com', 'Rollchemmy');
+        $mail->addAddress($email, $name);                             // Email pengirim (penerima balasan)
 
-    // Email pengirim
-    $headers = "From: marselasela3554@gmail.com\r\n";
-    $headers .= "Reply-To: marselasela3554@gmail.com\r\n";
-    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        // Konten email
+        $mail->isHTML(false);                                         // Gunakan email teks biasa
+        $mail->Body    .= "\"Gurihnya Kebahagiaan di Tiap Gigitan\" - Admin"; 
 
-    // Kirim email balasan
-    if (mail($to, $email_subject, $email_body, $headers)) {
-        echo "Message sent successfully!";
-    } else {
-        echo "Failed to send message.";
+        // Kirim email
+        if ($mail->send()) {
+            echo "Pesan Anda telah dikirim. Terima kasih!";
+        } else {
+            echo "Pesan gagal dikirim. Coba lagi.";
+        }
+    } catch (Exception $e) {
+        echo "Gagal mengirim email. Error: {$mail->ErrorInfo}";
     }
-} else {
-    echo "Invalid request.";
 }
 ?>
