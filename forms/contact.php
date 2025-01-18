@@ -1,45 +1,29 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'vendor/autoload.php'; // Atau path file PHPMailer jika tidak menggunakan Composer
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $subject = $_POST['subject'];
-    $message = $_POST['message'];
+    $name = htmlspecialchars($_POST['name']);
+    $email = htmlspecialchars($_POST['email']);
+    $subject = htmlspecialchars($_POST['subject']);
+    $message = htmlspecialchars($_POST['message']);
 
-    // Membuat instance PHPMailer
-    $mail = new PHPMailer(true);
+    // Nomor WhatsApp tujuan
+    $phoneNumber = '6282125909774'; // Ganti dengan nomor WhatsApp Anda tanpa tanda "+" dan gunakan format internasional
 
-    try {
-        // Pengaturan server SMTP
-        $mail->isSMTP();                                            // Menggunakan SMTP
-        $mail->Host = 'smtp.gmail.com';                               // Atur host SMTP (gunakan SMTP server Gmail di sini)
-        $mail->SMTPAuth = true;                                       // Aktifkan autentikasi SMTP
-        $mail->Username = 'marselasela3554@gmail.com';                 // Alamat email pengirim
-        $mail->Password = 'password_email_anda';                       // Password email pengirim (gunakan password app jika menggunakan Gmail)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;            // Enkripsi TLS
-        $mail->Port = 587;                                            // Port yang digunakan untuk TLS
+    // Format pesan WhatsApp
+    $whatsappMessage = "Halo, saya ingin menghubungi Anda.%0A%0A" . 
+                       "*Nama:* $name%0A" .
+                       "*Email:* $email%0A" .
+                       "*Subjek:* $subject%0A" .
+                       "*Pesan:* $message";
 
-        // Pengaturan penerima
-        $mail->setFrom('marselasela3554@gmail.com', 'Rollchemmy');
-        $mail->addAddress($email, $name);                             // Email pengirim (penerima balasan)
+    // URL untuk WhatsApp
+    $url = "https://wa.me/$phoneNumber?text=$whatsappMessage";
 
-        // Konten email
-        $mail->isHTML(false);                                         // Gunakan email teks biasa
-        $mail->Body    .= "\"Gurihnya Kebahagiaan di Tiap Gigitan\" - Admin"; 
-
-        // Kirim email
-        if ($mail->send()) {
-            echo "Pesan Anda telah dikirim. Terima kasih!";
-        } else {
-            echo "Pesan gagal dikirim. Coba lagi.";
-        }
-    } catch (Exception $e) {
-        echo "Gagal mengirim email. Error: {$mail->ErrorInfo}";
-    }
+    // Redirect ke WhatsApp
+    header("Location: $url");
+    exit;
+} else {
+    // Jika file ini diakses langsung tanpa melalui form
+    echo "Invalid request.";
+    exit;
 }
-?>
